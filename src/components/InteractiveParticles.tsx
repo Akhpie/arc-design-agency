@@ -2,13 +2,12 @@ import { useEffect, useRef } from "react";
 import styled from "styled-components";
 
 const Canvas = styled.canvas`
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 1;
 `;
 
 interface Particle {
@@ -22,12 +21,11 @@ interface Particle {
   baseVy: number;
   life: number;
   maxLife: number;
+  opacity: number;
 }
 
 const COLORS = [
-  "rgba(255, 255, 255, 0.3)",
-  "rgba(255, 255, 255, 0.2)",
-  "rgba(255, 255, 255, 0.1)",
+  "rgba(255, 255, 255, 1)", // We'll control opacity separately
 ];
 
 const InteractiveParticles = () => {
@@ -38,11 +36,11 @@ const InteractiveParticles = () => {
 
   const createParticle = (x: number, y: number): Particle => {
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 0.2 + 0.1;
+    const speed = Math.random() * 0.15 + 0.05; // Even slower movement
     return {
       x,
       y,
-      radius: Math.random() * 2 + 1,
+      radius: Math.random() * 1.5 + 0.5, // Smaller particles
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
@@ -50,6 +48,7 @@ const InteractiveParticles = () => {
       baseVy: Math.sin(angle) * speed,
       life: 1,
       maxLife: Math.random() * 150 + 150,
+      opacity: Math.random() * 0.3 + 0.1, // Random initial opacity
     };
   };
 
@@ -58,7 +57,7 @@ const InteractiveParticles = () => {
 
     const canvas = canvasRef.current;
     const particles: Particle[] = [];
-    const particleCount = Math.min(80, Math.floor(window.innerWidth / 20));
+    const particleCount = Math.min(40, Math.floor(window.innerWidth / 30)); // Even fewer particles
 
     for (let i = 0; i < particleCount; i++) {
       particles.push(
@@ -98,11 +97,11 @@ const InteractiveParticles = () => {
       const dx = mouseRef.current.x - particle.x;
       const dy = mouseRef.current.y - particle.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const repelRadius = 150;
+      const repelRadius = 100; // Smaller repel radius
 
       if (distance < repelRadius) {
         // Calculate repulsion force
-        const force = (1 - distance / repelRadius) * 1.5;
+        const force = (1 - distance / repelRadius) * 1.2;
         particle.vx = particle.baseVx - (dx / distance) * force;
         particle.vy = particle.baseVy - (dy / distance) * force;
       } else {
@@ -115,16 +114,29 @@ const InteractiveParticles = () => {
       particle.x += particle.vx;
       particle.y += particle.vy;
 
-      // Wrap around screen
-      if (particle.x < 0) particle.x = canvas.width;
-      if (particle.x > canvas.width) particle.x = 0;
-      if (particle.y < 0) particle.y = canvas.height;
-      if (particle.y > canvas.height) particle.y = 0;
+      // Wrap around screen with fade effect
+      const margin = 50; // Fade margin
+      if (particle.x < -margin) particle.x = canvas.width + margin;
+      if (particle.x > canvas.width + margin) particle.x = -margin;
+      if (particle.y < -margin) particle.y = canvas.height + margin;
+      if (particle.y > canvas.height + margin) particle.y = -margin;
+
+      // Calculate opacity based on position
+      const fadeDistance = 100; // Distance to start fading
+      const edgeFadeX = Math.min(particle.x, canvas.width - particle.x);
+      const edgeFadeY = Math.min(particle.y, canvas.height - particle.y);
+      const edgeFade = Math.min(edgeFadeX, edgeFadeY);
+
+      const normalOpacity = particle.opacity;
+      const fadeOpacity =
+        edgeFade < fadeDistance
+          ? (edgeFade / fadeDistance) * normalOpacity
+          : normalOpacity;
 
       // Draw particle
       ctx.beginPath();
       ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-      ctx.fillStyle = particle.color;
+      ctx.fillStyle = `rgba(255, 255, 255, ${fadeOpacity})`;
       ctx.fill();
 
       return true;
@@ -138,15 +150,16 @@ const InteractiveParticles = () => {
 
     const canvas = canvasRef.current;
     const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
       initParticles();
     };
 
     const handleMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
       mouseRef.current = {
-        x: e.clientX,
-        y: e.clientY,
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
       };
     };
 
@@ -154,11 +167,11 @@ const InteractiveParticles = () => {
     animate();
 
     window.addEventListener("resize", handleResize);
-    window.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mousemove", handleMouseMove);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      window.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mousemove", handleMouseMove);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
