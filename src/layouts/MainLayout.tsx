@@ -4,9 +4,9 @@ import Header from "./Header";
 import Footer from "./Footer";
 import GlobalStyles from "../styles/GlobalStyles";
 import SocialLinks from "../components/SocialLinks";
-
 import GlobalBackground from "../components/GlobalBackground";
 import SideNav from "../components/SideNav";
+import InteractiveParticles from "../components/InteractiveParticles";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -22,6 +22,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     <>
       <GlobalStyles />
       <GlobalBackground />
+      <InteractiveParticles />
       <Header />
       <Main>{children}</Main>
       <Footer />
