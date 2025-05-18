@@ -1,6 +1,50 @@
 import styled from "styled-components";
 import { Container } from "../styles/SharedStyles";
 import theme from "../styles/theme";
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+
+const useTypewriter = (
+  endValue: string,
+  start: boolean = false,
+  duration: number = 2000
+) => {
+  const [displayValue, setDisplayValue] = useState("0");
+  const isNumber = !isNaN(parseInt(endValue));
+  const animationRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!start) return;
+
+    if (isNumber) {
+      const numericValue = parseInt(endValue);
+      const steps = 30;
+      const stepDuration = duration / steps;
+      let currentStep = 0;
+
+      const animate = () => {
+        currentStep++;
+        const progress = currentStep / steps;
+        const currentNumber = Math.floor(numericValue * progress);
+        setDisplayValue(currentNumber + (endValue.includes("+") ? "+" : ""));
+
+        if (currentStep < steps) {
+          animationRef.current = window.setTimeout(animate, stepDuration);
+        }
+      };
+
+      animate();
+    }
+
+    return () => {
+      if (animationRef.current !== null) {
+        window.clearTimeout(animationRef.current);
+      }
+    };
+  }, [start, endValue, duration, isNumber]);
+
+  return displayValue;
+};
 
 const AboutSection = styled.section`
   min-height: 100vh;
@@ -41,7 +85,7 @@ const HeadingWrapper = styled.div`
   margin-bottom: 2rem;
 `;
 
-const MainHeading = styled.h2`
+const MainHeading = styled(motion.h2)`
   font-size: clamp(3rem, 8vw, 7.5rem);
   line-height: 1;
   font-weight: 600;
@@ -65,7 +109,7 @@ const SmallHeading = styled.div`
   margin-right: -2rem;
 `;
 
-const Description = styled.p`
+const Description = styled(motion.p)`
   font-size: clamp(1rem, 1.8vw, 1.25rem);
   line-height: 1.6;
   color: ${theme.colors.textSecondary};
@@ -73,7 +117,7 @@ const Description = styled.p`
   margin-bottom: 2rem;
 `;
 
-const Stats = styled.div`
+const Stats = styled(motion.div)`
   display: flex;
   gap: 4rem;
   margin-top: 4rem;
@@ -89,6 +133,7 @@ const StatItem = styled.div`
     font-size: clamp(2rem, 4vw, 3.5rem);
     font-weight: 600;
     margin-bottom: 0.5rem;
+    font-family: ${theme.fonts.mono};
   }
 
   .label {
@@ -100,37 +145,81 @@ const StatItem = styled.div`
 `;
 
 const About = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const clients = useTypewriter("50+", isVisible);
+  const projects = useTypewriter("120+", isVisible);
+  const years = useTypewriter("10", isVisible);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        threshold: 0.2,
+      }
+    );
+
+    if (statsRef.current) {
+      observer.observe(statsRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <AboutSection>
       <GridBackground />
       <Container>
         <Content>
           <HeadingWrapper>
-            <MainHeading>
+            <MainHeading
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               PUSHING THE <span className="outline">BOUNDARIES</span>
               <br />
               OF DIGITAL DESIGN.
             </MainHeading>
             <SmallHeading>ABOUT US</SmallHeading>
           </HeadingWrapper>
-          <Description>
+          <Description
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             We are a team of creative thinkers and problem solvers who are
             passionate about creating innovative digital solutions. Our
             expertise spans across design, development, and strategy, allowing
             us to deliver comprehensive solutions that drive real business
             results.
           </Description>
-          <Stats>
+          <Stats
+            ref={statsRef}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
             <StatItem>
-              <div className="number">50+</div>
+              <div className="number">{clients}</div>
               <div className="label">Happy Clients</div>
             </StatItem>
             <StatItem>
-              <div className="number">120+</div>
+              <div className="number">{projects}</div>
               <div className="label">Projects Completed</div>
             </StatItem>
             <StatItem>
-              <div className="number">10</div>
+              <div className="number">{years}</div>
               <div className="label">Years Experience</div>
             </StatItem>
           </Stats>

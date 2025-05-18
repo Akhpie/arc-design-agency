@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Container } from "../styles/SharedStyles";
 import theme from "../styles/theme";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 const BlogsSection = styled.section`
   min-height: 100vh;
@@ -50,7 +51,7 @@ const HeadingWrapper = styled.div`
   margin-bottom: 4rem;
 `;
 
-const MainHeading = styled.h2`
+const MainHeading = styled(motion.h2)`
   font-size: clamp(3rem, 8vw, 7.5rem);
   line-height: 1;
   font-weight: 600;
@@ -84,7 +85,7 @@ const SmallHeading = styled.div`
   margin-right: -2rem;
 `;
 
-const BlogGrid = styled.div`
+const BlogGrid = styled(motion.div)`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
@@ -97,7 +98,7 @@ const BlogGrid = styled.div`
   }
 `;
 
-const BlogCard = styled.article`
+const BlogCard = styled(motion.article)`
   background: rgba(255, 255, 255, 0.03);
   border-radius: 8px;
   padding: 2rem;
@@ -256,21 +257,47 @@ const Blogs = () => {
     },
   ];
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.1,
+        duration: 0.5,
+      },
+    }),
+  };
+
   return (
     <BlogsSection>
       <GridBackground />
       <Container>
         <Content>
           <HeadingWrapper>
-            <MainHeading>
+            <MainHeading
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               INSIGHTS & <span className="outline">THOUGHTS</span>
             </MainHeading>
             <SmallHeading>BLOG</SmallHeading>
           </HeadingWrapper>
 
-          <BlogGrid>
+          <BlogGrid
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
             {blogs.map((blog, index) => (
-              <BlogCard key={index} onClick={() => setSelectedBlog(index)}>
+              <BlogCard
+                key={index}
+                variants={cardVariants}
+                custom={index}
+                onClick={() => setSelectedBlog(index)}
+              >
                 <BlogDate>{blog.date}</BlogDate>
                 <BlogTitle>{blog.title}</BlogTitle>
                 <BlogExcerpt>{blog.excerpt}</BlogExcerpt>

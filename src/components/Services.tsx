@@ -3,6 +3,7 @@ import { Container } from "../styles/SharedStyles";
 import theme from "../styles/theme";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ServicesSection = styled.section`
   min-height: 100vh;
@@ -65,7 +66,7 @@ const ArrowLink = styled(Link)`
   }
 `;
 
-const MainHeading = styled.h2`
+const MainHeading = styled(motion.h2)`
   font-size: clamp(3.5rem, 8vw, 5rem);
   line-height: 1;
   font-weight: 600;
@@ -78,14 +79,14 @@ const MainHeading = styled.h2`
   }
 `;
 
-const AccordionContainer = styled.div`
+const AccordionContainer = styled(motion.div)`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   max-width: 900px;
 `;
 
-const AccordionItem = styled.div`
+const AccordionItem = styled(motion.div)`
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
@@ -168,6 +169,27 @@ const Tag = styled.span`
 const Services = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
   const services = [
     {
       title: "Product Design",
@@ -219,14 +241,24 @@ const Services = () => {
       <GridBackground />
       <Container>
         <Content>
-          <MainHeading>
+          <MainHeading
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
             WHAT <span className="outline">WE DO</span>
             <ArrowLink to="/services">→</ArrowLink>
           </MainHeading>
 
-          <AccordionContainer>
+          <AccordionContainer
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
             {services.map((service, index) => (
-              <AccordionItem key={index}>
+              <AccordionItem key={index} variants={itemVariants} custom={index}>
                 <AccordionHeader
                   isActive={activeIndex === index}
                   onClick={() => toggleAccordion(index)}
@@ -239,14 +271,26 @@ const Services = () => {
                   </HeaderTitle>
                 </AccordionHeader>
 
-                <AccordionContent isActive={activeIndex === index}>
-                  <Description>{service.description}</Description>
-                  <TagContainer>
-                    {service.tags.map((tag, i) => (
-                      <Tag key={i}>{tag}</Tag>
-                    ))}
-                  </TagContainer>
-                </AccordionContent>
+                <AnimatePresence>
+                  {activeIndex === index && (
+                    <AccordionContent isActive={activeIndex === index}>
+                      <Description>{service.description}</Description>
+                      <TagContainer>
+                        {service.tags.map((tag, i) => (
+                          <Tag
+                            key={i}
+                            as={motion.span}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.1 }}
+                          >
+                            {tag}
+                          </Tag>
+                        ))}
+                      </TagContainer>
+                    </AccordionContent>
+                  )}
+                </AnimatePresence>
               </AccordionItem>
             ))}
           </AccordionContainer>

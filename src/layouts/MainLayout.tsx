@@ -6,6 +6,7 @@ import GlobalStyles from "../styles/GlobalStyles";
 import SocialLinks from "../components/SocialLinks";
 import GlobalBackground from "../components/GlobalBackground";
 import SideNav from "../components/SideNav";
+import AssistiveNav from "../components/AssistiveNav";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -26,6 +27,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       <Footer />
       <SocialLinks />
       <SideNav />
+      <AssistiveNav />
     </>
   );
 };

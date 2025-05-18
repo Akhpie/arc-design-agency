@@ -37,6 +37,10 @@ const ParticleCanvas = styled.canvas`
   height: 100%;
   pointer-events: none;
   z-index: 1;
+
+  @media (max-width: ${theme.breakpoints.md}) {
+    display: none;
+  }
 `;
 
 const Content = styled.div`
@@ -159,10 +163,16 @@ const Hero = () => {
   }, []);
 
   const initParticles = useCallback(() => {
-    particlesRef.current = Array.from({ length: 50 }, () => createParticle());
+    // Only initialize particles if not on mobile
+    if (window.innerWidth > 768) {
+      particlesRef.current = Array.from({ length: 50 }, () => createParticle());
+    }
   }, [createParticle]);
 
   const drawParticles = useCallback(() => {
+    // Don't animate particles if on mobile
+    if (window.innerWidth <= 768) return;
+
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
@@ -206,20 +216,33 @@ const Hero = () => {
     if (canvasRef.current) {
       canvasRef.current.width = window.innerWidth;
       canvasRef.current.height = window.innerHeight;
+
+      // Reinitialize particles based on screen size
+      if (window.innerWidth > 768) {
+        initParticles();
+      } else {
+        particlesRef.current = []; // Clear particles on mobile
+      }
     }
-  }, []);
+  }, [initParticles]);
 
   const handleMouseMove = useCallback((event: MouseEvent) => {
-    mouseRef.current = {
-      x: event.clientX,
-      y: event.clientY,
-    };
+    // Only track mouse movement if not on mobile
+    if (window.innerWidth > 768) {
+      mouseRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+    }
   }, []);
 
   useEffect(() => {
     handleResize();
-    initParticles();
-    drawParticles();
+
+    // Only start animation if not on mobile
+    if (window.innerWidth > 768) {
+      drawParticles();
+    }
 
     window.addEventListener("resize", handleResize);
     window.addEventListener("mousemove", handleMouseMove);

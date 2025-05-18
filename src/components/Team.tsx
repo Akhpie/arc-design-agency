@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Container } from "../styles/SharedStyles";
 import theme from "../styles/theme";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const TeamSection = styled.section`
   min-height: 100vh;
@@ -44,7 +45,7 @@ const HeadingWrapper = styled.div`
   margin-bottom: 4rem;
 `;
 
-const MainHeading = styled.h2`
+const MainHeading = styled(motion.h2)`
   font-size: clamp(3.5rem, 8vw, 5rem);
   line-height: 1;
   font-weight: 600;
@@ -56,7 +57,7 @@ const MainHeading = styled.h2`
   }
 `;
 
-const Description = styled.p`
+const Description = styled(motion.p)`
   font-size: clamp(1rem, 1.8vw, 1.25rem);
   line-height: 1.6;
   color: ${theme.colors.textSecondary};
@@ -64,7 +65,7 @@ const Description = styled.p`
   margin-bottom: 2rem;
 `;
 
-const TeamGrid = styled.div`
+const TeamGrid = styled(motion.div)`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 4rem;
@@ -85,7 +86,7 @@ const TeamGrid = styled.div`
   }
 `;
 
-const TeamMember = styled.div`
+const TeamMember = styled(motion.div)`
   position: relative;
   transition: all 0.3s ease;
 
@@ -158,6 +159,27 @@ const ReadMoreButton = styled(Link)`
 `;
 
 const Team = () => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
   const teamMembers = [
     {
       name: "AKHIL NANDYALA",
@@ -191,20 +213,39 @@ const Team = () => {
       <Container>
         <Content>
           <HeadingWrapper>
-            <MainHeading>
+            <MainHeading
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
               MEET THE <span className="outline">TEAM</span>
             </MainHeading>
-            <Description>
+            <Description
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               Our team of creative visionaries and technical experts work
               together to push the boundaries of digital innovation and deliver
               exceptional results for our clients.
             </Description>
           </HeadingWrapper>
 
-          <TeamGrid>
+          <TeamGrid
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
             {teamMembers.map((member, index) => (
-              <TeamMember key={index}>
-                <MemberImage src={member.image} alt={member.name} />
+              <TeamMember
+                key={index}
+                variants={itemVariants}
+                whileHover={{ y: -10 }}
+              >
+                {/* <MemberImage src={member.image} alt={member.name} /> */}
                 <MemberInfo>
                   <MemberName>{member.name}</MemberName>
                   <MemberRole>{member.role}</MemberRole>
