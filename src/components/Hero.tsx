@@ -1,17 +1,10 @@
 import styled, { keyframes } from "styled-components";
 import { Container } from "../styles/SharedStyles";
 import theme from "../styles/theme";
-import { useEffect, useRef, useCallback } from "react";
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
-`;
-
-const float = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0px); }
 `;
 
 const HeroSection = styled.section`
@@ -23,20 +16,10 @@ const HeroSection = styled.section`
   overflow: hidden;
 
   @media (max-width: ${theme.breakpoints.md}) {
-    padding: none;
+    padding: 0;
     min-height: auto;
     align-items: center;
   }
-`;
-
-const ParticleCanvas = styled.canvas`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
 `;
 
 const Content = styled.div`
@@ -115,7 +98,6 @@ const ScrollIndicator = styled.div`
   letter-spacing: 1px;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  animation: ${float} 3s ease-in-out infinite;
   cursor: pointer;
   transition: color 0.3s ease;
 
@@ -130,116 +112,13 @@ const ScrollIndicator = styled.div`
   }
 `;
 
-interface Particle {
-  x: number;
-  y: number;
-  size: number;
-  speedX: number;
-  speedY: number;
-  opacity: number;
-  color: string;
-}
-
 const Hero = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const animationFrameRef = useRef<number | undefined>(undefined);
-
-  const createParticle = useCallback((x?: number, y?: number): Particle => {
-    return {
-      x: x ?? Math.random() * window.innerWidth,
-      y: y ?? Math.random() * window.innerHeight,
-      size: Math.random() * 3 + 1,
-      speedX: Math.random() * 0.5 - 0.25,
-      speedY: Math.random() * 0.5 - 0.25,
-      opacity: Math.random() * 0.3 + 0.1,
-      color: `rgba(255, 255, 255, ${Math.random() * 0.3 + 0.1})`,
-    };
-  }, []);
-
-  const initParticles = useCallback(() => {
-    particlesRef.current = Array.from({ length: 50 }, () => createParticle());
-  }, [createParticle]);
-
-  const drawParticles = useCallback(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    particlesRef.current.forEach((particle) => {
-      ctx.beginPath();
-      ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-      ctx.fillStyle = particle.color;
-      ctx.fill();
-
-      // Update position
-      particle.x += particle.speedX;
-      particle.y += particle.speedY;
-
-      // Mouse interaction - gentler repulsion
-      const dx = mouseRef.current.x - particle.x;
-      const dy = mouseRef.current.y - particle.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      if (distance < 150) {
-        particle.x -= dx * 0.02;
-        particle.y -= dy * 0.02;
-      }
-
-      // Bounce off edges with dampening
-      if (particle.x < 0 || particle.x > canvas.width) {
-        particle.speedX *= -0.95;
-        particle.x = Math.max(0, Math.min(canvas.width, particle.x));
-      }
-      if (particle.y < 0 || particle.y > canvas.height) {
-        particle.speedY *= -0.95;
-        particle.y = Math.max(0, Math.min(canvas.height, particle.y));
-      }
-    });
-
-    animationFrameRef.current = requestAnimationFrame(drawParticles);
-  }, []);
-
-  const handleResize = useCallback(() => {
-    if (canvasRef.current) {
-      canvasRef.current.width = window.innerWidth;
-      canvasRef.current.height = window.innerHeight;
-    }
-  }, []);
-
-  const handleMouseMove = useCallback((event: MouseEvent) => {
-    mouseRef.current = {
-      x: event.clientX,
-      y: event.clientY,
-    };
-  }, []);
-
-  useEffect(() => {
-    handleResize();
-    initParticles();
-    drawParticles();
-
-    window.addEventListener("resize", handleResize);
-    window.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, [handleResize, initParticles, drawParticles, handleMouseMove]);
-
   const scrollToAbout = () => {
     document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <HeroSection id="hero">
-      <ParticleCanvas ref={canvasRef} />
       <Container>
         <Content>
           <MainHeading>
