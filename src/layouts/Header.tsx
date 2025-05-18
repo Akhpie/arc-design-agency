@@ -145,15 +145,25 @@ const HeaderContainer = styled(Container)`
 
 const Logo = styled(Link)`
   font-family: ${theme.fonts.primary};
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: ${theme.colors.text};
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: transparent;
+  -webkit-text-stroke: 1px #6e44ff;
   text-decoration: none;
-  letter-spacing: -0.5px;
+  letter-spacing: 2px;
   z-index: 2;
   position: relative;
   background: transparent;
   padding: 0 10px;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 10px rgba(110, 68, 255, 0.5),
+    0 0 20px rgba(110, 68, 255, 0.3);
+
+  &:hover {
+    -webkit-text-stroke: 1.5px #8a6fff;
+    text-shadow: 0 0 15px rgba(110, 68, 255, 0.8),
+      0 0 30px rgba(110, 68, 255, 0.5);
+  }
 `;
 
 const MenuButton = styled.button`
@@ -290,7 +300,7 @@ const Header = () => {
     <>
       <HeaderWrapper>
         <HeaderContainer>
-          <Logo to="/">un</Logo>
+          <Logo to="/">ARC</Logo>
           <div className="dot-left" />
           <div className="dot-right" />
           <MenuButton onClick={() => setIsMenuOpen(true)}>MENU</MenuButton>
