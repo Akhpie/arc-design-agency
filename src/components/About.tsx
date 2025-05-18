@@ -3,6 +3,7 @@ import { Container } from "../styles/SharedStyles";
 import theme from "../styles/theme";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import VideoBackground from "./VideoBackground";
 
 const useTypewriter = (
   endValue: string,
@@ -85,15 +86,47 @@ const HeadingWrapper = styled.div`
   margin-bottom: 2rem;
 `;
 
-const MainHeading = styled(motion.h2)`
-  font-size: clamp(3rem, 8vw, 7.5rem);
-  line-height: 1;
-  font-weight: 600;
+const VideoOverlay = styled.div<{ isVisible: boolean }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: ${(props) => (props.isVisible ? 1 : 0)};
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+`;
+
+const StyledVideo = styled.video`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+`;
+
+const TextWrapper = styled.span`
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
 
   .outline {
     color: transparent;
     -webkit-text-stroke: 1px white;
+    position: relative;
+    z-index: 2;
+    transition: opacity 0.3s ease;
   }
+
+  &:hover .outline {
+    opacity: 0;
+  }
+`;
+
+const MainHeading = styled(motion.h2)`
+  font-size: clamp(3rem, 8vw, 7.5rem);
+  line-height: 1;
+  font-weight: 600;
+  position: relative;
 `;
 
 const SmallHeading = styled.div`
@@ -146,6 +179,7 @@ const StatItem = styled.div`
 
 const About = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const statsRef = useRef<HTMLDivElement>(null);
   const clients = useTypewriter("50+", isVisible);
   const projects = useTypewriter("120+", isVisible);
@@ -185,7 +219,14 @@ const About = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              PUSHING THE <span className="outline">BOUNDARIES</span>
+              PUSHING THE{" "}
+              <TextWrapper
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
+                <span className="outline">BOUNDARIES</span>
+                <VideoBackground isVisible={isHovered} />
+              </TextWrapper>
               <br />
               OF DIGITAL DESIGN.
             </MainHeading>
